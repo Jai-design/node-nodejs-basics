@@ -1,20 +1,26 @@
+const fs = require('fs').promises;
+const path = require('path');
+
 const create = async () => {
-    const fs = require('fs');
-    const path = require('path');
-function createFreshFile() {
     const dir = path.join(__dirname, 'files');
     const filePath = path.join(dir, 'fresh.txt');
-    const content = 'I am fresh and young';
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir);
-    }
-    if (fs.existsSync(filePath)) {
-        throw new Error('FSoperation failed');
-    }
-    fs.writeFileSync(filePath, content, 'utf8');
-}
+    const content = 'I am a fresh and young';
     try {
-        createFreshFile();
+        try {
+            await fs.mkdir(dir, {
+                recursive: true });
+        } catch (err) {
+            console.error('Error creating directory:', err);
+        }
+        try {
+            await fs.access(filePath);
+            throw new Error('FS operation failed');
+        } catch (err) {
+            if (err.code !== 'ENOENT') {
+                throw err;
+            }
+        }
+        await fs.writeFile(filePath, content, 'utf8');
         console.log('File created successfully');
     } catch (error) {
         console.error(error.message);
